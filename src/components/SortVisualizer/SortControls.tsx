@@ -28,6 +28,7 @@ export interface SortControlsProps {
 
 export function SortControls({ step, setStep, stepsLen }: SortControlsProps) {
 	const [playing, setPlaying] = useState(false);
+	const stepRef = useRef<number>(step);
 	const timerRef = useRef<number | null>(null);
 
 	const clearTimer = () => {
@@ -35,39 +36,33 @@ export function SortControls({ step, setStep, stepsLen }: SortControlsProps) {
 		timerRef.current = null;
 	};
 
-	const moveStep = (offset: number) => {
+	const changeStep = (newStep: SetStateAction<number>) => {
 		clearTimer();
 		setPlaying(false);
-		setStep((currentStep) => Math.min(Math.max(currentStep + offset, 0), stepsLen - 1));
+		setStep((currStep) => {
+			const requestedStep = typeof newStep === "function" ? newStep(currStep) : newStep;
+			return Math.min(Math.max(requestedStep, 0), Math.max(stepsLen - 1, 0));
+		});
 	};
 
-	const restart = () => {
-		clearTimer();
-		setPlaying(false);
-		setStep(0);
-	};
+	useEffect(() => {
+		stepRef.current = step;
+	}, [step]);
 
 	// Advance the animation on a timer and stop playback after the final step.
 	useEffect(() => {
-		clearTimer();
-		if (!playing || !(stepsLen > 0)) return;
-		if (playing) {
+		if (!playing || !(stepsLen >= 1)) return clearTimer;
+		if (playing && stepsLen >= 1) {
 			timerRef.current = window.setInterval(() => {
-				let stopPlaying = false;
-				setStep((currStep) => {
-					if (currStep < stepsLen - 1) return currStep + 1;
-					stopPlaying = true;
-					return currStep;
-				});
-				if (stopPlaying) {
-					setPlaying(false);
-					clearTimer();
+				if (stepRef.current >= stepsLen - 1) setPlaying(false);
+				if (stepRef.current < stepsLen - 1) {
+					stepRef.current += 1;
+					setStep(stepRef.current);
 				}
 			}, 250);
+			return clearTimer;
 		}
-		return () => {
-			clearTimer();
-		};
+		return clearTimer;
 	}, [playing, setStep, stepsLen]);
 
 	return (
@@ -82,7 +77,7 @@ export function SortControls({ step, setStep, stepsLen }: SortControlsProps) {
 				min={0}
 				max={Math.max(stepsLen - 1, 0)}
 				value={step}
-				onChange={(event) => setStep(Number(event.currentTarget.value))}
+				onChange={(event) => changeStep(Number(event.currentTarget.value))}
 			/>
 			<div
 				className="col-start-2 row-start-2 flex gap-2 max-[520px]:col-start-1 max-[520px]:row-start-3 max-[520px]:justify-center"
@@ -92,7 +87,7 @@ export function SortControls({ step, setStep, stepsLen }: SortControlsProps) {
 				<button
 					className={stepButtonClass}
 					type="button"
-					onClick={() => moveStep(-1)}
+					onClick={() => changeStep((currStep) => currStep - 1)}
 					disabled={step === 0 || !(stepsLen > 0)}
 					aria-label="Previous step"
 					title="Previous step"
@@ -113,7 +108,7 @@ export function SortControls({ step, setStep, stepsLen }: SortControlsProps) {
 				<button
 					className={stepButtonClass}
 					type="button"
-					onClick={() => moveStep(1)}
+					onClick={() => changeStep((currStep) => currStep + 1)}
 					disabled={step >= stepsLen - 1 || !(stepsLen > 0)}
 					aria-label="Next step"
 					title="Next step"
@@ -123,7 +118,7 @@ export function SortControls({ step, setStep, stepsLen }: SortControlsProps) {
 				<button
 					className={stepButtonClass}
 					type="button"
-					onClick={restart}
+					onClick={() => changeStep(0)}
 					disabled={!(stepsLen > 0)}
 					aria-label="Restart"
 					title="Restart"
