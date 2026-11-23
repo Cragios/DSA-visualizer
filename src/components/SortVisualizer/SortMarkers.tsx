@@ -1,15 +1,27 @@
+/** Describes a value and its role in the current sorting step. */
 export interface SortMarker {
+	/** Short label identifying the role, such as an index name. */
 	key: string;
+	/** Value associated with the role. */
 	value: number;
+	/** Brief explanation of the role. */
 	note: string;
+	/** Tailwind class used to color the marker. */
 	colorClass: string;
 }
 
+/** Properties used to render the current algorithm markers and note. */
 export interface SortMarkersProps {
+	/** Marker values and labels for the current step. */
 	markers: SortMarker[];
+	/** Summary of the current algorithm operation. */
 	note: string;
 }
 
+/**
+ * Renders the index markers and operation note for a sorting step.
+ * @param props Markers and the current operation note.
+ */
 export function SortMarkers({ markers, note }: SortMarkersProps) {
 	return (
 		<div

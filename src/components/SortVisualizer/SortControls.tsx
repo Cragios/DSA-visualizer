@@ -8,6 +8,10 @@ const playbackButtonClass = `${controlButtonClass} bg-indigo-600 text-white shad
 
 type ControlIconName = "play" | "pause" | "restart" | "previous" | "next";
 
+/**
+ * Renders the icon for a sorting playback control.
+ * @param name The control icon to display.
+ */
 function ControlIcon({ name }: { name: ControlIconName }) {
 	return (
 		<svg className="size-4.75" aria-hidden="true" viewBox="0 0 24 24">
@@ -20,22 +24,35 @@ function ControlIcon({ name }: { name: ControlIconName }) {
 	);
 }
 
+/** Properties used by the sorting playback controls. */
 export interface SortControlsProps {
+	/** Current position in the sorting steps. */
 	step: number;
+	/** Sets the current step directly or from its previous value. */
 	setStep: Dispatch<SetStateAction<number>>;
+	/** Total number of sorting steps. */
 	stepsLen: number;
 }
 
+/**
+ * Renders controls for navigating and playing through sorting steps.
+ * @param props Current step, step setter, and total number of steps.
+ */
 export function SortControls({ step, setStep, stepsLen }: SortControlsProps) {
 	const [playing, setPlaying] = useState(false);
 	const stepRef = useRef<number>(step);
 	const timerRef = useRef<number | null>(null);
 
+	/** Clears the active playback interval, if present. */
 	const clearTimer = () => {
 		if (timerRef.current !== null) window.clearInterval(timerRef.current);
 		timerRef.current = null;
 	};
 
+	/**
+	 * Stops playback and applies a step update within the available range.
+	 * @param newStep The target step or an updater based on the current step.
+	 */
 	const changeStep = (newStep: SetStateAction<number>) => {
 		clearTimer();
 		setPlaying(false);

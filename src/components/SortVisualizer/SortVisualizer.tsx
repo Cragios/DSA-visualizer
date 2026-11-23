@@ -10,14 +10,24 @@ import type {
 	SortBarProps,
 } from "../../components";
 
+/** Configuration required to render a sorting algorithm visualization. */
 export interface SortVisualizerProps<TStep extends SortStep> {
+	/** Title displayed above the visualization. */
 	title: string;
+	/** Initial array supplied to the algorithm. */
 	arr: number[];
+	/** Generator that yields the algorithm's states for the array. */
 	generator: SortGenerator<TStep>;
+	/** Builds marker display properties for a given step. */
 	genMarkersProps: (step: TStep) => SortMarkersProps;
+	/** Builds display properties for each array bar. */
 	genSortBarProps: (step: TStep, value: number, index: number, maxValue: number) => SortBarProps;
 }
 
+/**
+ * Renders a sorting algorithm's steps, markers, bars, and playback controls.
+ * @param props Algorithm title, input array, step generator, and display-props builders.
+ */
 export function SortVisualizer<TStep extends SortStep>({
 	title,
 	arr,
